@@ -9,4 +9,12 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('/auth/{provider}', [SSOController::class, 'redirectToProvider']);
+Route::middleware('web')->group(function () {
+    Route::get('/auth/{provider}', [SSOController::class, 'redirectToProvider']);
+    Route::get('/auth/{provider}/callback', [SSOController::class, 'handleProviderCallback']);
+});
+//middleware web digunakan untuk mengaktifkan session dan CSRF protection
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/logout', [SSOController::class, 'logout']);
+});

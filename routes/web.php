@@ -8,9 +8,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/auth/{provider}', [SSOController::class, 'redirectToProvider']);
-Route::get('/auth/{provider}/callback', [SSOController::class, 'handleProviderCallback']);
-
-// Route::get('/auth/redirect', function () {
-//     return Socialite::driver('google')->redirect();
-// });
+// Route::get('/auth/{provider}', [SSOController::class, 'redirectToProvider']);
+// Route::get('/auth/{provider}/callback', [SSOController::class, 'handleProviderCallback']);
