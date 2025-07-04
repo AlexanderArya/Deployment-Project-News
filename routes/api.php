@@ -1,5 +1,6 @@
 <?php
 
+<<<<<<< HEAD
 use App\Http\Controllers\SSOController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,3 +19,11 @@ Route::middleware('web')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [SSOController::class, 'logout']);
 });
+=======
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:api');
+>>>>>>> 71a1939401dd6969ca48fa3a7d2dd09fc54ef432

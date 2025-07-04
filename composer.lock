@@ -2372,6 +2372,7 @@
             "time": "2024-09-21T08:32:55+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "league/oauth1-client",
             "version": "v1.11.0",
             "source": {
@@ -2448,6 +2449,8 @@
             "time": "2024-12-10T19:59:05+00:00"
         },
         {
+=======
+>>>>>>> 71a1939401dd6969ca48fa3a7d2dd09fc54ef432
             "name": "league/oauth2-server",
             "version": "9.2.0",
             "source": {
