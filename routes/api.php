@@ -1,17 +1,16 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('profile', fn() => auth()->user());
+    Route::post('logout', [AuthController::class, 'logout']);
+});
 
-
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::prefix('auth')->middleware('web')->group(function () {
+    Route::get('{provider}/redirect',  [AuthController::class, 'redirect'])
+        ->where('provider', 'google|facebook');
+    Route::get('{provider}/callback',  [AuthController::class, 'callback'])
+        ->where('provider', 'google|facebook');
 });

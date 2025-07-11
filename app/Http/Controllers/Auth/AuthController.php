@@ -4,57 +4,46 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function redirect(string $provider)
     {
-        $fields = $request->validate([
-            'name' => 'required|max:16',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-        ]);
+        $driver = Socialite::driver($provider)->stateless();
 
-        $user = User::create($fields);
-
-        $token = $user->createToken($user->name)->plainTextToken;
-
-        return response()->json([
-            'message' => 'Register Successfully.',
-            'token' => $token
-        ], 201);
+        return $driver->redirect();
     }
 
-    public function login(Request $request)
+    public function callback(string $provider)
     {
-        $fields = $request->validate([
-            'email' => 'required|email|exists:users',
-            'password' => 'required'
-        ]);
+        $social = Socialite::driver($provider)->stateless()->user();
 
-        $user = User::where('email', $fields['email'])->first();
-        if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return response()->json([
-                'message' => 'Invalid credential.'
-            ], 401);
+        $user = User::updateOrCreate(
+            ['email' => $social->getEmail()],
+            [
+                'name'        => $social->getName() ?: $social->getNickname(),
+                'avatar'      => $social->getAvatar(),
+                'provider'    => $provider,
+                'provider_id' => $social->getId(),
+            ]
+        );
+
+        Auth::login($user);
+
+        return redirect()->away(config('app.frontend_url'));
+    }
+
+    public function logout(): Response
+    {
+        if (Auth::check()) {
+            Cache::forget('user:' . Auth::id() . ':profile');
+            Auth::logout();
         }
 
-        $token = $user->createToken($user->name)->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login Successfully.',
-            'token' => $token
-        ], 200);
-    }
-
-    public function logout(Request $request)
-    {
-        $request->user()->tokens()->delete();
-
-        return response()->json([
-            'message' => 'Logout Successfully.'
-        ], 200);
+        return response()->noContent();
     }
 }
