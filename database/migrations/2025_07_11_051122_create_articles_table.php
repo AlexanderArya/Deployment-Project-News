@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->string('author');
+            $table->date('realese_date');
+            $table->string('studio');
+            $table->string('jenis');
+            $table->string('genre');
+            $table->string('karakter');
+            $table->integer('count_views');
+            $table->enum('rating', [1, 2, 3, 4, 5]);
             $table->timestamps();
         });
     }
