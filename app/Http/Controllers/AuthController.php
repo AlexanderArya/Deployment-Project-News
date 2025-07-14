@@ -12,6 +12,12 @@ class AuthController extends Controller
     {
         $validated = $request->Validated(['name' => 'required', 'email' => 'required', 'password' => 'required']);
         $user = User::create($validated);
-        return $user;
+
+        $token = $user->createToken($user->username)->plainTextTokens;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
     }
 }
