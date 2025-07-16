@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(CommentSeeder::class);
+
+        $this->call(EventSeeder::class);
     }
 }
