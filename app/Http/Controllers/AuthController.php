@@ -41,6 +41,8 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            return redirect('http://localhost:5173');
+
             return response()->json([
                 'message' => 'Login via Google SSO successfully',
                 'user' => $user,
