@@ -9,56 +9,63 @@ use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
+    /**
+     * Redirect user ke halaman login Google
+     */
     public function redirect()
     {
         return Socialite::driver('google')->redirect();
     }
 
+    /**
+     * Callback dari Google setelah user login
+     */
     public function callback(Request $request)
     {
         try {
             $googleUser = Socialite::driver('google')->user();
 
+            // Cari user berdasarkan google_id atau email
             $user = User::where('google_id', $googleUser->getId())
-                ->orWhere('email', $googleUser->getEmail())
-                ->first();
+                        ->orWhere('email', $googleUser->getEmail())
+                        ->first();
 
             if (!$user) {
+                // User baru
                 $user = User::create([
-                    'name'        => $googleUser->getName(),
-                    'email'       => $googleUser->getEmail(),
-                    'google_id'   => $googleUser->getId(),
-                    'avatar'      => $googleUser->getAvatar(),
-                ]);
-            } else {
-                $user->update([
-                    'google_id' => $user->google_id ?? $googleUser->getId(),
+                    'name'      => $googleUser->getName(),
+                    'email'     => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
                     'avatar'    => $googleUser->getAvatar(),
                 ]);
+            } else {
+                // User sudah ada, perbarui jika perlu
+                if (!$user->google_id) {
+                    $user->google_id = $googleUser->getId();
+                }
+                $user->avatar = $googleUser->getAvatar();
+                $user->save();
             }
 
+            // Login dan regenerate session
             Auth::login($user);
-
             $request->session()->regenerate();
 
-            return redirect('http://localhost:5173');
-
-            return response()->json([
-                'message' => 'Login via Google SSO successfully',
-                'user' => $user,
-            ]);
+            // Redirect ke frontend (SPA)
+            return redirect('http://localhost:5173?login=success');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Unauthorized',
-                'details' => $e->getMessage()
-            ], 401);
+            // Jika gagal, redirect dengan error (bisa sesuaikan)
+            return redirect('http://localhost:5173?login=error');
         }
     }
 
+    /**
+     * Logout user dari session
+     */
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -68,6 +75,9 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Mendapatkan data user yang sedang login
+     */
     public function me(Request $request)
     {
         return response()->json($request->user());
